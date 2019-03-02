@@ -224,10 +224,10 @@ def presetHalfSwing(morph, repeats):
 
     file_out = "marathon_out.mid"
 
-    #straight
-    notes1 = [0,1920,0,960,0,960]
-    #phrased
-    notes2 = [0,1920,0,1440,0,480]
+    # straight
+    notes1 = [0, 1920, 0, 960, 0, 960]
+    # phrased
+    notes2 = [0, 1920, 0, 1440, 0, 480]
 
     fm = 1
     rm = 960
@@ -236,11 +236,11 @@ def presetHalfSwing(morph, repeats):
     tra = midi.Track()
     pat.append(tra)
 
-    #pattern weight (must add up to 1.0)
+    # pattern weight (must add up to 1.0)
     w1 = 1-float(morph)/100
     w2 = float(morph)/100
 
-    #rounding correction
+    # rounding correction
     rc = 0
 
     for n in range(int(repeats)):
@@ -249,7 +249,7 @@ def presetHalfSwing(morph, repeats):
             tick1 = int(notes1[e])
             tick2 = int(notes2[e])
 
-            #rounding correction
+            # rounding correction
             rc += (w1 * tick1) + (w2 * tick2) - float(int(w1 * tick1) + (w2 * tick2))
 
             if rc % 1 < -0.5:
@@ -290,10 +290,10 @@ def presetWestAfricanTriplet(morph, repeats):
 
     file_out = "marathon_out.mid"
 
-    #straight
-    notes1 = [0,480,0,480,0,480]
-    #phrased
-    notes2 = [0,720,0,360,0,360]
+    # straight
+    notes1 = [0, 480, 0, 480, 0, 480]
+    # phrased
+    notes2 = [0, 720, 0, 360, 0, 360]
 
     fm = 1
     rm = 960
@@ -302,11 +302,11 @@ def presetWestAfricanTriplet(morph, repeats):
     tra = midi.Track()
     pat.append(tra)
 
-    #pattern weight (must add up to 1.0)
+    # pattern weight (must add up to 1.0)
     w1 = 1-float(morph)/100
     w2 = float(morph)/100
 
-    #rounding correction
+    # rounding correction
     rc = 0
 
     for n in range(int(repeats)):
@@ -315,7 +315,7 @@ def presetWestAfricanTriplet(morph, repeats):
             tick1 = int(notes1[e])
             tick2 = int(notes2[e])
 
-            #rounding correction
+            # rounding correction
             rc += (w1 * tick1) + (w2 * tick2) - float(int(w1 * tick1) + (w2 * tick2))
 
             if rc % 1 < -0.5:
@@ -356,10 +356,10 @@ def presetGwanaTriplet(morph, repeats):
 
     file_out = "marathon_out.mid"
 
-    #straight
-    notes1 = [0,480,0,480,0,480]
-    #phrased
-    notes2 = [0,576,0,288,0,576]
+    # straight
+    notes1 = [0, 480, 0, 480, 0, 480]
+    # phrased
+    notes2 = [0, 576, 0, 288, 0, 576]
 
     fm = 1
     rm = 960
@@ -368,11 +368,11 @@ def presetGwanaTriplet(morph, repeats):
     tra = midi.Track()
     pat.append(tra)
 
-    #pattern weight (must add up to 1.0)
+    # pattern weight (must add up to 1.0)
     w1 = 1-float(morph)/100
     w2 = float(morph)/100
 
-    #rounding correction
+    # rounding correction
     rc = 0
 
     for n in range(int(repeats)):
@@ -381,7 +381,7 @@ def presetGwanaTriplet(morph, repeats):
             tick1 = int(notes1[e])
             tick2 = int(notes2[e])
 
-            #rounding correction
+            # rounding correction
             rc += (w1 * tick1) + (w2 * tick2) - float(int(w1 * tick1) + (w2 * tick2))
 
             if rc % 1 < -0.5:
@@ -422,10 +422,10 @@ def presetBrazilianSixteens(morph, repeats):
 
     file_out = "marathon_out.mid"
 
-    #straight
-    notes1 = [0,240,0,240,0,240,0,240]
-    #phrased
-    notes2 = [0,320,0,160,0,160,0,320]
+    # straight
+    notes1 = [0, 240, 0, 240, 0, 240, 0, 240]
+    # phrased
+    notes2 = [0, 320, 0, 160, 0, 160, 0, 320]
 
     fm = 1
     rm = 960
@@ -434,11 +434,11 @@ def presetBrazilianSixteens(morph, repeats):
     tra = midi.Track()
     pat.append(tra)
 
-    #pattern weight (must add up to 1.0)
+    # pattern weight (must add up to 1.0)
     w1 = 1-float(morph)/100
     w2 = float(morph)/100
 
-    #rounding correction
+    # rounding correction
     rc = 0
 
     for n in range(int(repeats)):
@@ -447,7 +447,7 @@ def presetBrazilianSixteens(morph, repeats):
             tick1 = int(notes1[e])
             tick2 = int(notes2[e])
 
-            #rounding correction
+            # rounding correction
             rc += (w1 * tick1) + (w2 * tick2) - float(int(w1 * tick1) + (w2 * tick2))
 
             if rc % 1 < -0.5:
@@ -488,10 +488,10 @@ def presetBraffsQuintuplets(morph, repeats):
 
     file_out = "marathon_out.mid"
 
-    #straight
-    notes1 = [0,192,0,192,0,192,0,192,0,192]
-    #phrased
-    notes2 = [0,274,0,137,0,137,0,275,0,137]
+    # straight
+    notes1 = [0, 192, 0, 192, 0, 192, 0, 192, 0, 192]
+    # phrased
+    notes2 = [0, 274, 0, 137, 0, 137, 0, 275, 0, 137]
 
     fm = 1
     rm = 960
@@ -500,11 +500,11 @@ def presetBraffsQuintuplets(morph, repeats):
     tra = midi.Track()
     pat.append(tra)
 
-    #pattern weight (must add up to 1.0)
+    # pattern weight (must add up to 1.0)
     w1 = 1-float(morph)/100
     w2 = float(morph)/100
 
-    #rounding correction
+    # rounding correction
     rc = 0
 
     for n in range(int(repeats)):
@@ -513,7 +513,7 @@ def presetBraffsQuintuplets(morph, repeats):
             tick1 = int(notes1[e])
             tick2 = int(notes2[e])
 
-            #rounding correction
+            # rounding correction
             rc += (w1 * tick1) + (w2 * tick2) - float(int(w1 * tick1) + (w2 * tick2))
 
             if rc % 1 < -0.5:
@@ -554,10 +554,10 @@ def presetVienesseWaltz(morph, repeats):
 
     file_out = "marathon_out.mid"
 
-    #straight
-    notes1 = [0,960,0,960,0,960]
-    #phrased
-    notes2 = [0,720,0,1200,0,960]
+    # straight
+    notes1 = [0, 960, 0, 960, 0, 960]
+    # phrased
+    notes2 = [0, 720, 0, 1200, 0, 960]
 
     fm = 1
     rm = 960
@@ -566,11 +566,11 @@ def presetVienesseWaltz(morph, repeats):
     tra = midi.Track()
     pat.append(tra)
 
-    #pattern weight (must add up to 1.0)
+    # pattern weight (must add up to 1.0)
     w1 = 1-float(morph)/100
     w2 = float(morph)/100
 
-    #rounding correction
+    # rounding correction
     rc = 0
 
     for n in range(int(repeats)):
@@ -579,7 +579,7 @@ def presetVienesseWaltz(morph, repeats):
             tick1 = int(notes1[e])
             tick2 = int(notes2[e])
 
-            #rounding correction
+            # rounding correction
             rc += (w1 * tick1) + (w2 * tick2) - float(int(w1 * tick1) + (w2 * tick2))
 
             if rc % 1 < -0.5:
@@ -618,21 +618,21 @@ def textCommand(morph, repeats):
     file_out = "marathon_out.mid"
 
     note_length = {
-            "w": 3840,
-            "h": 1920,
-            "q": 960,
-            "e": 480,
-            "s": 240,
-            "t": 120
-            }
+        "w": 3840,
+        "h": 1920,
+        "q": 960,
+        "e": 480,
+        "s": 240,
+        "t": 120
+    }
 
-    note_list1 = str(comm1).replace("-"," ").split(" ")
-    note_list2 = str(comm2).replace("-"," ").split(" ")
+    note_list1 = str(comm1).replace("-", " ").split(" ")
+    note_list2 = str(comm2).replace("-", " ").split(" ")
 
     notes1 = []
     notes2 = []
 
-    #notes
+    # notes
     for note in note_list1:
         notes1.append(int(0))
         notes1.append(int(note_length[str(note)[0]]))
@@ -640,7 +640,7 @@ def textCommand(morph, repeats):
         notes2.append(int(0))
         notes2.append(int(note_length[str(note)[0]]))
 
-    #dots
+    # dots
     pos = 1
     for note in note_list1:
         if len(str(note)) == 2:
@@ -672,7 +672,7 @@ def textCommand(morph, repeats):
                 notes2[pos*2-1] += int(notes2[pos*2-1]/14)
         pos += 1
 
-    #tuplets
+    # tuplets
     pos = 1
     for note in note_list1:
         if "/" in str(note):
@@ -693,7 +693,7 @@ def textCommand(morph, repeats):
     notes1_f = []
     notes2_f = []
 
-    #tying notes
+    # tying notes
     pos = 1
     for note in str(comm1).split(" "):
         notes1_f.append(0)
@@ -719,7 +719,7 @@ def textCommand(morph, repeats):
         notes2_f.append(tied_value)
         pos += 1
 
-    #length equalization
+    # length equalization
     T1 = 0
     for note in notes1_f:
         T1 += int(note)
@@ -739,11 +739,11 @@ def textCommand(morph, repeats):
     tra = midi.Track()
     pat.append(tra)
 
-    #pattern weight (must add up to 1.0)
+    # pattern weight (must add up to 1.0)
     w1 = 1-float(morph)/100
     w2 = float(morph)/100
 
-    #rounding correction
+    # rounding correction
     rc = 0
 
     for n in range(int(repeats)):
@@ -752,7 +752,7 @@ def textCommand(morph, repeats):
             tick1 = int(notes1_f[e])
             tick2 = int(notes2_f[e])
 
-            #rounding correction
+            # rounding correction
             rc += (w1 * tick1) + (w2 * tick2) - float(int(w1 * tick1) + (w2 * tick2))
 
             if rc % 1 < -0.5:
@@ -785,35 +785,35 @@ def Marathon(preset, comm1, comm2, morph, repeats, file):
     if str(preset) == "1":
         presetCustomFile(morph, repeats, file)
 
-    #Swing
+    # Swing
     elif str(preset) == "2":
         presetSwing(morph, repeats)
 
-    #Half-Swing
+    # Half-Swing
     elif str(preset) == "3":
         presetHalfSwing(morph, repeats)
 
-    #West African Triplet
+    # West African Triplet
     elif str(preset) == "4":
         presetWestAfricanTriplet(morph, repeats)
 
-    #Gnawa Triplet
+    # Gnawa Triplet
     elif str(preset) == "5":
         presetGwanaTriplet(morph, repeats)
 
-    #Brazilian 16ths
+    # Brazilian 16ths
     elif str(preset) == "6":
         presetBrazilianSixteens(morph, repeats)
 
-    #Braff's Quintuplets
+    # Braff's Quintuplets
     elif str(preset) == "7":
         presetBraffsQuintuplets(morph, repeats)
 
-    #Viennese Waltz
+    # Viennese Waltz
     elif str(preset) == "8":
         presetVienesseWaltz(morph, repeats)
 
-    #Text Command
+    # Text Command
     elif str(preset) == "99":
         textCommand(morph, repeats)
 
