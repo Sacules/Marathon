@@ -18,22 +18,30 @@ and pitch pattern of the first track.
 As of February 26, 2019, Marathon can also generate microrhythms for you,
 without having to feed it a MIDI file. You can select from 6 different
 rhythmic classes (like Swing Feel, Gnawa Triplet, or Brazilian 16ths), and
-apply a morph value of your desire to create a microrhythm. For this feature  the program will output a file by the name "marathon_out.mid" that contains
+apply a morph value of your desire to create a microrhythm. For this feature
+the program will output a file by the name "marathon_out.mid" that contains
 the rhythmic pattern placed by default on C4 (note 60).
 
 As of February 26, 2019, Marathon can also generate microrhythms for you,
 without having to feed it a MIDI file. You can select from 6 different
 rhythmic classes (like Swing Feel, Gnawa Triplet, or Brazilian 16ths), and
-apply a morph value of your desire to create a microrhythm. For this feature  the program will output a file by the name "marathon_out.mid" that contains
+apply a morph value of your desire to create a microrhythm. For this feature
+the program will output a file by the name "marathon_out.mid" that contains
 the rhythmic pattern placed by default on C4 (note 60).
 
-As of February 27, 2019, Marathon can also generate custom microrhythms without the need for MIDI input. You can select preset "99" and write your two rhythm tracks using text commands. Marathon accepts note length (from whole to thirty-second notes), dots (up to 3), and tuplet feel (Marathon is very flexible regarding tuplets, as they don't need to be whole to be accepted). The syntax is "ndx/y":
+As of February 27, 2019, Marathon can also generate custom microrhythms
+without the need for MIDI input. You can select preset "99" and write your
+two rhythm tracks using text commands. Marathon accepts note length (from
+whole to thirty-second notes), dots (up to 3), and tuplet feel (Marathon
+is very flexible regarding tuplets, as they don't need to be whole to be
+accepted). The syntax is "ndx/y":
 * n is the note value
 * d is the place for dots
 * x/y is the tuplet space (it must be two integers separated by "/")
 * Each note must be separated by a space or dash ("-") for tied notes
 
-You can then choose a morph value and a number of repetitions, and then the program will export the completed MIDI track as "marathon_out.mid".
+You can then choose a morph value and a number of repetitions, and then
+the program will export the completed MIDI track as "marathon_out.mid".
 
 Known issues:
 
@@ -607,7 +615,7 @@ def presetVienesseWaltz(morph, repeats):
     midi.write_midifile(file_out, pat)
 
 
-def textCommand(morph, repeats):
+def textCommand(morph, repeats, comm1, comm2):
     """TODO: Docstring for textCommand.
 
     :arg1: TODO
@@ -815,7 +823,7 @@ def Marathon(preset, comm1, comm2, morph, repeats, file):
 
     # Text Command
     elif str(preset) == "99":
-        textCommand(morph, repeats)
+        textCommand(morph, repeats, comm1, comm2)
 
 
 def main():
