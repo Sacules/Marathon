@@ -819,7 +819,21 @@ def Marathon(preset, comm1, comm2, morph, repeats, file):
 
 
 def main():
-    preset = input("Choose preset \n\n1: Custom File\n2: Swing\n3: Half-Swing\n4: West African Triplet\n5: Gnawa Triplet\n6: Brazilian 16ths\n7: Braff's Quintuplet\n8: Viennese Waltz\n99: Text Command\n\nEnter number: ")
+    presets_string = """
+Choose preset:
+
+1: Custom File
+2: Swing
+3: Half-Swing
+4: West African Triplet
+5: Gnawa Triplet
+6: Brazilian 16ths
+7: Braff's Quintuplet
+8: Viennese Waltz
+99: Text Command
+"""
+    print(presets_string)
+    preset = input("\nEnter number: ")
     comm1 = ""
     comm2 = ""
     morph = ""
@@ -834,46 +848,163 @@ def main():
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "2":
-        morph = input("Enter morph value (0-100)\n\nExamples\n0: 1:1 Straight Quarter Notes\n29: ~4:3 Septuplet Feel\n40: 3:2 Quintuplet Feel\n50: 5:3 Eighth Feel\n66.7: 2:1 Triplet Feel \n85.7: ~5:2 Septuplet Feel\n100: 3:1 Hard Swing\n\nEnter number: ")
+        morph_examples = """
+Enter morph value (0-100)
+
+Examples
+0: 1:1 Straight Quarter Notes
+29: ~4:3 Septuplet Feel
+40: 3:2 Quintuplet Feel
+50: 5:3 Eighth Feel
+66.7: 2:1 Triplet Feel
+85.7: ~5:2 Septuplet Feel
+100: 3:1 Hard Swing
+"""
+        print(morph_examples)
+        morph = input("\nEnter number: ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "3":
-        morph = input("Enter morph value (0-100)\n\nExamples\n0: 1:1 Straight Quarter Notes\n29: ~4:3 Septuplet Feel\n40: 3:2 Quintuplet Feel\n50: 5:3 Eighth Feel\n66.7: 2:1 Triplet Feel \n85.7: ~5:2 Septuplet Feel\n100: 3:1 Hard Swing\n\nEnter number: ")
+        morph_examples = """
+Enter morph value (0-100)
+
+Examples
+0: 1:1 Straight Quarter Notes
+29: ~4:3 Septuplet Feel
+40: 3:2 Quintuplet Feel
+50: 5:3 Eighth Feel
+66.7: 2:1 Triplet Feel
+85.7: ~5:2 Septuplet Feel
+100: 3:1 Hard Swing
+"""
+        print(morph_examples)
+        morph = input("\nEnter number: ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "4":
-        morph = input("Enter morph value (0-100)\n\nExamples\n0: 1:1:1 Straight Triplet Notes\n50: Halfway Morph\n100: 2:1:1 16ths Gallop\n\nEnter number: ")
+        morph_examples = """
+Enter morph value (0-100)
+
+Examples
+0: 1:1:1 Straight Triplet Notes
+50: Halfway Morph
+100: 2:1:1 16ths Gallop
+"""
+        print(morph_examples)
+        morph = input("\nEnter number: ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "5":
-        morph = input("Enter morph value (0-100)\n\nExamples\n0: 1:1:1 Straight Triplet Notes\n50: Halfway Morph\n100: 2:1:2 Quintuplet Feel\n\nEnter number: ")
+        morph_examples = """
+Enter morph value (0-100)
+
+Examples
+0: 1:1:1 Straight Triplet Notes
+50: Halfway Morph
+100: 2:1:2 Quintuplet Feel
+"""
+        print(morph_examples)
+        morph = input("\nEnter number: ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "6":
-        morph = input("Enter morph value (0-100)\n\nExamples\n0: 1:1:1:1 Straight 16th Notes\n50: Halfway Morph\n100: 2:1:1:2 Sixtuplet Feel\n\nEnter number: ")
+        morph_examples = """
+Enter morph value (0-100)
+
+Examples
+0: 1:1:1:1 Straight 16th Notes
+50: Halfway Morph
+100: 2:1:1:2 Sixtuplet Feel
+"""
+        print(morph_examples)
+        morph = input("\nEnter number: ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "7":
-        morph = input("Enter morph value (0-100)\n\nExamples\n0: 1:1:1:1:1 Straight Quintuplets\n50: Halfway Morph\n100: 2:1:1:2:1 Septuplet Feel\n\nEnter number: ")
+        morph_examples = """
+Enter morph value (0-100)
+
+Examples
+0: 1:1:1:1:1 Straight Quintuplets
+50: Halfway Morph
+100: 2:1:1:2:1 Septuplet Feel
+"""
+        print(morph_examples)
+        morph = input("\nEnter number: ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "8":
-        morph = input("Enter morph value (0-100)\n\nExamples\n0: 1:1:1 Straight Quarter Notes\n50: Halfway Morph\n65: Recommended Morph\n100: 3:5:4 16ths Feel\n\nEnter number: ")
+        morph_examples = """
+Enter morph value (0-100)
+
+Examples
+0: 1:1:1 Straight Quarter Notes
+50: Halfway Morph
+65: Recommended Morph
+100: 3:5:4 16ths Feel
+"""
+        print(morph_examples)
+        morph = input("\nEnter number: ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "99":
-        comm1 = input("Enter text notation for track 1\n\nSeparate each note by a space, tied notes with a dash\n\nNotes\nw: whole note\nh: half note\nq: quarter note\ne: eighth note\ns: sixteenth note\nt: thirty-second note\n\nDots (after the note)\n.: dotted\n..: double dotted\n...: triple dotted\n\nTuplets (after note and dots)\nx/y: where x-tuplet notes are to be played in y non-tuplet notes\n\nEnter text command (track 1): ")
-        comm2 = input("Enter text notation for track 2\n\nSeparate each note by a space, tied notes with a dash\n\nNotes\nw: whole note\nh: half note\nq: quarter note\ne: eighth note\ns: sixteenth note\nt: thirty-second note\n\nDots (after the note)\n.: dotted\n..: double dotted\n...: triple dotted\n\nTuplets (after note and dots)\nx/y: where x-tuplet notes are to be played in y non-tuplet notes\n\nEnter text command (track 2): ")
+        comm1 = input("""
+Enter text notation for track 1
+
+Separate each note by a space, tied notes with a dash
+
+Notes
+w: whole note
+h: half note
+q: quarter note
+e: eighth note
+s: sixteenth note
+t: thirty-second note
+
+Dots (after the note)
+.: dotted
+..: double dotted
+...: triple dotted
+
+Tuplets (after note and dots)
+x/y: where x-tuplet notes are to be played in y non-tuplet notes
+
+Enter text command (track 1): """)
+
+        comm2 = input("""
+Enter text notation for track 2
+
+Separate each note by a space, tied notes with a dash
+
+Notes
+w: whole note
+h: half note
+q: quarter note
+e: eighth note
+s: sixteenth note
+t: thirty-second note
+
+Dots (after the note)
+.: dotted
+..: double dotted
+...: triple dotted
+
+Tuplets (after note and dots)
+x/y: where x-tuplet notes are to be played in y non-tuplet notes
+
+Enter text command (track 2): """)
+
         if len(str(comm1).split(" ")) != len(str(comm2).split(" ")):
             print("Error: The number of notes in the two tracks is different.")
             raise SystemExit
+
         morph = input("Enter morph value (0-100): ")
         repeats = input("How many repetitions do you want?: ")
         Marathon(preset, comm1, comm2, morph, repeats, file)
