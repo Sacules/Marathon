@@ -963,9 +963,7 @@ Examples
         Marathon(preset, comm1, comm2, morph, repeats, file)
 
     elif str(preset) == "99":
-        comm1 = input("""
-Enter text notation for track 1
-
+        text_notation = """
 Separate each note by a space, tied notes with a dash
 
 Notes
@@ -983,33 +981,16 @@ Dots (after the note)
 
 Tuplets (after note and dots)
 x/y: where x-tuplet notes are to be played in y non-tuplet notes
+"""
+        print("Enter text notation for track 1")
+        print(text_notation)
+        comm1 = input("Enter text command (track 1): ")
+        print("you entered:", comm1)
 
-Enter text command (track 1): """)
+        print("Enter text notation for track 2")
+        comm2 = input("Enter text command (track 2): ")
 
-        comm2 = input("""
-Enter text notation for track 2
-
-Separate each note by a space, tied notes with a dash
-
-Notes
-w: whole note
-h: half note
-q: quarter note
-e: eighth note
-s: sixteenth note
-t: thirty-second note
-
-Dots (after the note)
-.: dotted
-..: double dotted
-...: triple dotted
-
-Tuplets (after note and dots)
-x/y: where x-tuplet notes are to be played in y non-tuplet notes
-
-Enter text command (track 2): """)
-
-        if len(str(comm1).split(" ")) != len(str(comm2).split(" ")):
+        if len(comm1.split(" ")) != len(comm2.split(" ")):
             print("Error: The number of notes in the two tracks is different.")
             raise SystemExit
 
