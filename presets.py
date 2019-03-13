@@ -3,7 +3,157 @@
 """Presets for marathon."""
 
 import midi
+import time
 
+file_out = "marathon_out"+str(time.strftime('%Y-%m-%d-%Hh%Mm%Ss'))+".mid"
+
+format_out = 1
+res_out = 960
+tick_rest = 0
+
+pat = midi.Pattern(format=int(format_out), resolution=int(res_out))
+tra = midi.Track()
+pat.append(tra)
+
+def length_equalization(notes,repeats):
+    """TODO: Docstring for Swing.
+
+    Args:
+        morph: TODO
+        repeats: TODO
+
+    Returns: TODO
+
+    """
+
+    total = 0
+    for note in notes:
+        total += int(note)
+        
+    return total
+        
+def total_tick(notes2,total_1,total_2,repeats):
+    """TODO: Docstring for Swing.
+
+    Args:
+        morph: TODO
+        repeats: TODO
+
+    Returns: TODO
+
+    """
+
+    ratio = total_1 / total_2
+    
+    pos = 0
+    for note in notes2:
+        notes2[pos] = int(note*ratio)
+        pos += 1
+
+    totaltick = total_1 * int(repeats)
+    
+    return totaltick
+
+def rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick):
+    """TODO: Docstring for Swing.
+
+    Args:
+        morph: TODO
+        repeats: TODO
+
+    Returns: TODO
+
+    """
+
+    correction = 0
+
+    weight_start = float(morph1)
+    weight_end = float(morph2)
+    
+    currenttick = 0
+
+    notes_final = []
+
+    for n in range(int(repeats)):
+        e = 0
+        for event in notes2:
+            tick1 = int(notes1[e])
+            tick2 = int(notes2[e])
+
+            progress = currenttick / totaltick
+
+            if weight_start != weight_end:
+                weight_1 = (1 - progress) * (weight_end/100) + progress * (weight_start/100)
+                weight_2 = progress * (weight_end/100) + (1 - progress) * (weight_start/100)
+            else:
+                weight_1 = 1-float(float(morph1)/100)
+                weight_2 = float(float(morph1)/100)
+
+            # rounding correction
+            correction += (weight_1 * tick1) + (weight_2 * tick2) - float(int((weight_1 * tick1) + (weight_2 * tick2)))
+            if correction % 1 >= 0.5:
+                tick_morphed = int((weight_1 * tick1) + (weight_2 * tick2)) + int(correction) + 1
+                correction = 0
+            else:
+                tick_morphed = int((weight_1 * tick1) + (weight_2 * tick2)) + int(correction)
+                correction = 0
+
+            notes_final.append(int(tick_morphed))
+            
+            currenttick += tick_morphed
+
+            e += 1
+            
+    return notes_final
+
+def finalizing(notes_final,total_1,total_2,repeats):
+    """TODO: Docstring for Swing.
+
+    Args:
+        morph: TODO
+        repeats: TODO
+
+    Returns: TODO
+
+    """
+
+    total_morphed = 0
+
+    for note in notes_final:
+        total_morphed += int(note)
+
+    correction_factor = (total_1*int(repeats))/total_morphed
+
+    for note in notes_final:
+        note = int(note*correction_factor)
+
+    delta_t = total_morphed - total_1*int(repeats)
+
+    if delta_t > 0:
+        i = 1
+        for n in range(abs(delta_t)):
+            if i >= len(notes_final):
+                i = 1
+            notes_final[i] -= 1
+            i += 2
+    if delta_t < 0:
+        i = 1
+        for n in range(abs(delta_t)):
+            if i >= len(notes_final):
+                i = 1
+            notes_final[i] += 1
+            i += 1
+
+    for note in notes_final:
+        tick_morphed = int(note)
+        noteon = midi.NoteOnEvent(tick=tick_rest, channel=0, data=[60, 70])
+        tra.append(noteon)
+        noteoff = midi.NoteOffEvent(tick=tick_morphed, channel=0, data=[60, 0])
+        tra.append(noteoff)
+
+    trackend = midi.EndOfTrackEvent(tick=1)
+    tra.append(trackend)
+    midi.write_midifile(file_out, pat)
 
 def swing(morph1, morph2, repeats):
     """TODO: Docstring for Swing.
@@ -15,115 +165,23 @@ def swing(morph1, morph2, repeats):
     Returns: TODO
 
     """
-    file_out = "marathon_out.mid"
 
     # straight
     notes1 = [0, 960, 0, 960]
     # phrased
     notes2 = [0, 1440, 0, 480]
 
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
-
     # length equalization
-    T1 = 0
-    for note in notes1:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2:
-        notes2[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
-
-    notes_f = []
-
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2:
-            tick1 = int(notes1[e])
-            tick2 = int(notes2[e])
-
-            progress = currenttick / totaltick
-
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
-
-    delta_t = Tm - T1*int(repeats)
-
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-
-    f = 0
-
-    for note in notes_f:
-        tickm = int(note)
-        noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-        tra.append(noteon)
-        noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-        tra.append(noteoff)
-        f += tickm
-
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
-
-
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
+    
 def half_swing(morph1, morph2, repeats):
     """TODO: Docstring for HalfSwing.
 
@@ -134,126 +192,76 @@ def half_swing(morph1, morph2, repeats):
     Returns: TODO
 
     """
-
-    file_out = "marathon_out.mid"
-
+    
     # straight
     notes1 = [0, 1920, 0, 960, 0, 960]
     # phrased
     notes2 = [0, 1920, 0, 1440, 0, 480]
 
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
-
     # length equalization
-    T1 = 0
-    for note in notes1:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2:
-        notes2[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
-    notes_f = []
+def hard_swing(morph1, morph2, repeats):
+    """TODO: Docstring for Swing.
 
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2:
-            tick1 = int(notes1[e])
-            tick2 = int(notes2[e])
+    Args:
+        morph: TODO
+        repeats: TODO
 
-            progress = currenttick / totaltick
+    Returns: TODO
 
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
+    """
     
-    Tm = 0
-    
-    for note in notes_f:
-        Tm += int(note)
+    # straight
+    notes1 = [0, 960, 0, 960]
+    # phrased
+    notes2 = [0, 1800, 0, 120]
 
-    delta_t = Tm - T1*int(repeats)
+    # length equalization
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-            
-    Tm = 0
-    
-    for note in notes_f:
-        Tm += int(note)
+    # rounding correction
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    f = 0
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
-    for note in notes_f:
-        tickm = int(note)
-        noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-        tra.append(noteon)
-        noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-        tra.append(noteoff)
-        f += tickm
+def half_hard_swing(morph1, morph2, repeats):
+    """TODO: Docstring for HalfSwing.
 
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
+    Args:
+        morph: TODO
+        repeats: TODO
 
+    Returns: TODO
+
+    """
+
+    # straight
+    notes1 = [0, 1920, 0, 960, 0, 960]
+    # phrased
+    notes2 = [0, 1920, 0, 1800, 0, 120]
+
+    # length equalization
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
+
+    # rounding correction
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
+
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
 def west_african_triplet(morph1, morph2, repeats):
     """TODO: Docstring for WestAfricanTriplet.
@@ -266,118 +274,21 @@ def west_african_triplet(morph1, morph2, repeats):
 
     """
 
-    file_out = "marathon_out.mid"
-
     # straight
     notes1 = [0, 480, 0, 480, 0, 480]
     # phrased
     notes2 = [0, 720, 0, 360, 0, 360]
 
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
-
     # length equalization
-    T1 = 0
-    for note in notes1:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2:
-        notes2[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
-
-    notes_f = []
-
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2:
-            tick1 = int(notes1[e])
-            tick2 = int(notes2[e])
-
-            progress = currenttick / totaltick
-
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
-
-    delta_t = Tm - T1*int(repeats)
-
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-
-    Tm = 0
-    for note in notes_f:
-        Tm += int(note)
-    f = 0
-
-    for note in notes_f:
-        tickm = int(note)
-        noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-        tra.append(noteon)
-        noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-        tra.append(noteoff)
-        f += tickm
-
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
-
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
 def gwana_triplet(morph1, morph2, repeats):
     """TODO: Docstring for GwanaTriplet.
@@ -390,118 +301,21 @@ def gwana_triplet(morph1, morph2, repeats):
 
     """
 
-    file_out = "marathon_out.mid"
-
     # straight
     notes1 = [0, 480, 0, 480, 0, 480]
     # phrased
     notes2 = [0, 576, 0, 288, 0, 576]
 
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
-
     # length equalization
-    T1 = 0
-    for note in notes1:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2:
-        notes2[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
-
-    notes_f = []
-
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2:
-            tick1 = int(notes1[e])
-            tick2 = int(notes2[e])
-
-            progress = currenttick / totaltick
-
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
-
-    delta_t = Tm - T1*int(repeats)
-
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-
-    Tm = 0
-    for note in notes_f:
-        Tm += int(note)
-    f = 0
-
-    for note in notes_f:
-        tickm = int(note)
-        noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-        tra.append(noteon)
-        noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-        tra.append(noteoff)
-        f += tickm
-
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
-
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
 def brazilian_sixteens(morph1, morph2, repeats):
     """TODO: Docstring for BrazilianSixteens.
@@ -514,118 +328,21 @@ def brazilian_sixteens(morph1, morph2, repeats):
 
     """
 
-    file_out = "marathon_out.mid"
-
     # straight
     notes1 = [0, 240, 0, 240, 0, 240, 0, 240]
     # phrased
     notes2 = [0, 320, 0, 160, 0, 160, 0, 320]
 
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
-
     # length equalization
-    T1 = 0
-    for note in notes1:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2:
-        notes2[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
-
-    notes_f = []
-
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2:
-            tick1 = int(notes1[e])
-            tick2 = int(notes2[e])
-
-            progress = currenttick / totaltick
-
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
-
-    delta_t = Tm - T1*int(repeats)
-
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-
-    Tm = 0
-    for note in notes_f:
-        Tm += int(note)
-    f = 0
-
-    for note in notes_f:
-        tickm = int(note)
-        noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-        tra.append(noteon)
-        noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-        tra.append(noteoff)
-        f += tickm
-
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
-
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
 def braffs_quintuplets(morph1, morph2, repeats):
     """TODO: Docstring for BraffsQuintuplets.
@@ -638,118 +355,21 @@ def braffs_quintuplets(morph1, morph2, repeats):
 
     """
 
-    file_out = "marathon_out.mid"
-
     # straight
     notes1 = [0, 192, 0, 192, 0, 192, 0, 192, 0, 192]
     # phrased
     notes2 = [0, 274, 0, 137, 0, 137, 0, 275, 0, 137]
 
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
-
     # length equalization
-    T1 = 0
-    for note in notes1:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2:
-        notes2[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
-
-    notes_f = []
-
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2:
-            tick1 = int(notes1[e])
-            tick2 = int(notes2[e])
-
-            progress = currenttick / totaltick
-
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
-
-    delta_t = Tm - T1*int(repeats)
-
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-
-    Tm = 0
-    for note in notes_f:
-        Tm += int(note)
-    f = 0
-
-    for note in notes_f:
-        tickm = int(note)
-        noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-        tra.append(noteon)
-        noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-        tra.append(noteoff)
-        f += tickm
-
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
-
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
 def vienesse_waltz(morph1, morph2, repeats):
     """TODO: Docstring for VienesseWaltz.
@@ -762,118 +382,21 @@ def vienesse_waltz(morph1, morph2, repeats):
 
     """
 
-    file_out = "marathon_out.mid"
-
     # straight
     notes1 = [0, 960, 0, 960, 0, 960]
     # phrased
     notes2 = [0, 720, 0, 1200, 0, 960]
 
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
-
     # length equalization
-    T1 = 0
-    for note in notes1:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2:
-        notes2[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
-
-    notes_f = []
-
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2:
-            tick1 = int(notes1[e])
-            tick2 = int(notes2[e])
-
-            progress = currenttick / totaltick
-
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
-
-    delta_t = Tm - T1*int(repeats)
-
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-
-    Tm = 0
-    for note in notes_f:
-        Tm += int(note)
-    f = 0
-
-    for note in notes_f:
-        tickm = int(note)
-        noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-        tra.append(noteon)
-        noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-        tra.append(noteoff)
-        f += tickm
-
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
-
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
 def text_command(morph1, morph2, repeats, comm1, comm2):
     """TODO: Docstring for textCommand.
@@ -883,8 +406,6 @@ def text_command(morph1, morph2, repeats, comm1, comm2):
 
     """
 
-    file_out = "marathon_out.mid"
-
     note_length = {
         "w": 3840,
         "h": 1920,
@@ -892,14 +413,16 @@ def text_command(morph1, morph2, repeats, comm1, comm2):
         "e": 480,
         "s": 240,
         "t": 120
-    }            
-    
+    }
+
     new_comm1 = str(comm1).split(" ")
     new_comm2 = str(comm2).split(" ")
-    
+
     comm1 = ""
     comm2 = ""
-        
+
+    tick_rest = 0
+
     for comm in new_comm1:
         if "(" in str(comm):
             num = int(comm.split("(")[0])
@@ -914,7 +437,7 @@ def text_command(morph1, morph2, repeats, comm1, comm2):
                 comm1 += str(comm)
             else:
                 comm1 += " "+str(comm)
-            
+
     for comm in new_comm2:
         if "(" in str(comm):
             num = int(comm.split("(")[0])
@@ -929,65 +452,50 @@ def text_command(morph1, morph2, repeats, comm1, comm2):
                 comm2 += str(comm)
             else:
                 comm2 += " "+str(comm)
-            
+
     if len(comm1.split(" ")) != len(comm2.split(" ")):
         print("Error: The two commands must be of similar length\n\nTrack 1: "+str(comm1)+"\n\nTrack 2: "+str(comm2))
         raise SystemExit
 
     note_list1 = []
     note_list2 = []
-    
-    for note in comm1.split(" "):
+
+    for note in str(comm1).replace("-", " ").split(" "):
         note_list1.append(str(note))
-    for note in comm2.split(" "):
+    for note in str(comm2).replace("-", " ").split(" "):
         note_list2.append(str(note))
 
     notes1 = []
     notes2 = []
-    
+
     #notes
     for note in note_list1:
-        notes1.append(int(0))
         notes1.append(int(note_length[str(note)[0]]))
 
     for note in note_list2:
-        notes2.append(int(0))
         notes2.append(int(note_length[str(note)[0]]))
 
     # dots
-    pos = 1
+    pos = 0
     for note in note_list1:
-        if len(str(note)) == 2:
-            if str(note)[1] == ".":
-                notes1[pos*2-1] += int(notes1[pos*2-1]/2)
-        if len(str(note)) == 3:
-            if str(note)[2] == ".":
-                notes1[pos*2-1] += int(notes1[pos*2-1]/2)
-                notes1[pos*2-1] += int(notes1[pos*2-1]/6)
-        if len(str(note)) == 4:
-            if str(note)[3] == ".":
-                notes1[pos*2-1] += int(notes1[pos*2-1]/2)
-                notes1[pos*2-1] += int(notes1[pos*2-1]/6)
-                notes1[pos*2-1] += int(notes1[pos*2-1]/14)
+        n_dots = 0
+        if "." in str(note):
+            n_dots += int(str(note).count("."))
+            for n in range(n_dots):
+                notes1[pos] += int(notes1[pos]/(2*((n+1)**2-n)))
         pos += 1
-    pos = 1
+                        
+    pos = 0
     for note in note_list2:
-        if len(str(note)) == 2:
-            if str(note)[1] == ".":
-                notes2[pos*2-1] += int(notes2[pos*2-1]/2)
-        if len(str(note)) == 3:
-            if str(note)[2] == ".":
-                notes2[pos*2-1] += int(notes2[pos*2-1]/2)
-                notes2[pos*2-1] += int(notes2[pos*2-1]/6)
-        if len(str(note)) == 4:
-            if str(note)[3] == ".":
-                notes2[pos*2-1] += int(notes2[pos*2-1]/2)
-                notes2[pos*2-1] += int(notes2[pos*2-1]/6)
-                notes2[pos*2-1] += int(notes2[pos*2-1]/14)
+        n_dots = 0
+        if "." in str(note):
+            n_dots += int(str(note).count("."))
+            for n in range(n_dots):
+                notes2[pos] += int(notes2[pos]/(2*((n+1)**2-n)))
         pos += 1
 
     # tuplets
-    pos = 1
+    pos = 0
     for note in note_list1:
         if "/" in str(note):
             tuplet_start = 0
@@ -1004,9 +512,9 @@ def text_command(morph1, morph2, repeats, comm1, comm2):
                 else:
                     break
             denom = int(str(note).split("/")[1][0:tuplet_end])
-            notes1[pos*2-1] = int(notes1[pos*2-1]*(denom/nom))
+            notes1[pos] = int(notes1[pos]*(denom/nom))
         pos += 1
-    pos = 1
+    pos = 0
     for note in note_list2:
         if "/" in str(note):
             tuplet_start = 0
@@ -1023,152 +531,48 @@ def text_command(morph1, morph2, repeats, comm1, comm2):
                 else:
                     break
             denom = int(str(note).split("/")[1][0:tuplet_end])
-            notes2[pos*2-1] = int(notes2[pos*2-1]*(denom/nom))
+            notes2[pos] = int(notes2[pos]*(denom/nom))
         pos += 1
 
     notes1_f = []
     notes2_f = []
 
     # tying notes
-    pos = 1
+    pos = 0
     for note in str(comm1).split(" "):
-        notes1_f.append(0)
         ties = 0
         if "-" in str(note):
             ties += int(str(note).count("-"))
-        tied_value = notes1[pos*2-1]
-        posi = 0
-        for n in range(ties-1):
-            tied_value += int(notes1[posi*2+1])
-            posi += 1
+        tied_value = notes1[pos]
+        posi = 1
+        if ties != 0:     
+            for n in range(ties):
+                tied_value += int(notes1[pos+posi])
+                posi += 1
         notes1_f.append(tied_value)
-        pos += 1
-    pos = 1
+        pos += 1+ties
+    pos = 0
     for note in str(comm2).split(" "):
-        notes2_f.append(0)
         ties = 0
         if "-" in str(note):
             ties += int(str(note).count("-"))
-        tied_value = notes2[pos*2-1]
-        posi = 0
-        for n in range(ties-1):
-            tied_value += int(notes2[posi*2+1])
-            posi += 1
+        tied_value = notes2[pos]
+        posi = 1
+        if ties != 0:     
+            for n in range(ties):
+                tied_value += int(notes2[pos+posi])
+                posi += 1
         notes2_f.append(tied_value)
-        pos += 1
+        pos += 1+ties
 
     # length equalization
-    T1 = 0
-    for note in notes1_f:
-        T1 += int(note)
-    T2 = 0
-    for note in notes2_f:
-        T2 += int(note)
-    ratio = T1/T2
-    pos = 0
-    for note in notes2_f:
-        notes2_f[pos] = int(note*ratio)
-        pos += 1
-
-    totaltick = T1 * int(repeats)
-
-    fm = 1
-    rm = 960
-
-    pat = midi.Pattern(format=int(fm), resolution=int(rm))
-    tra = midi.Track()
-    pat.append(tra)
+    total_1 = length_equalization(notes1,repeats)
+    total_2 = length_equalization(notes2,repeats)
+    totaltick = total_tick(notes2,total_1,total_2,repeats)
 
     # rounding correction
-    rc = 0
+    notes_final = rounding_correction(notes1,notes2,morph1,morph2,repeats,totaltick)
 
-    ws = float(morph1)
-    we = float(morph2)
-    currenttick = 0
-
-    notes_f = []
-
-    for n in range(int(repeats)):
-        e = 0
-        for event in notes2_f:
-            tick1 = int(notes1_f[e])
-            tick2 = int(notes2_f[e])
-
-            progress = currenttick / totaltick
-            if ws != we:
-                w1 = (1 - progress) * (we/100) + progress * (ws/100)
-                w2 = progress * (we/100) + (1 - progress) * (ws/100)
-            else:
-                w1 = 1-float(float(morph1)/100)
-                w2 = float(float(morph1)/100)
-
-            # rounding correction
-            rc += (w1 * tick1) + (w2 * tick2) - float(int((w1 * tick1) + (w2 * tick2)))
-
-            if rc % 1 >= 0.5:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc) + 1
-                rc = 0
-            else:
-                tickm = int((w1 * tick1) + (w2 * tick2)) + int(rc)
-                rc = 0
-
-            notes_f.append(int(tickm))
-
-            currenttick += tickm
-
-            e += 1
-
-    Tm = 0
-
-    for note in notes_f:
-        Tm += int(note)
-
-    cf = (T1*int(repeats))/Tm
-
-    for note in notes_f:
-        note = int(note*cf)
-
-    delta_t = Tm - T1*int(repeats)
-
-    if delta_t > 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] -= 1
-            i += 2
-    if delta_t < 0:
-        i = 1
-        for n in range(abs(delta_t)):
-            if i >= len(notes_f):
-                i = 1
-            notes_f[i] += 1
-            i += 1
-
-    Tm = 0
-    for note in notes_f:
-        Tm += int(note)
-
-    f = 0
-    e = 0
-    for note in notes_f:
-        tickm = int(note)
-        if "r" in str(comm1).split(" ")[e//2] or "r" in str(comm2).split(" ")[e//2]:
-            noteon = midi.NoteOnEvent(tick=0, channel=0, data=[0, 1])
-            tra.append(noteon)
-            noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[0, 0])
-            tra.append(noteoff)
-        else:
-            noteon = midi.NoteOnEvent(tick=0, channel=0, data=[60, 70])
-            tra.append(noteon)
-            noteoff = midi.NoteOffEvent(tick=tickm, channel=0, data=[60, 0])
-            tra.append(noteoff)
-        e += 1
-        if e == len(str(comm1).split(" ")):
-            e = 0
-        f += tickm
-
-    trackend = midi.EndOfTrackEvent(tick=1)
-    tra.append(trackend)
-    midi.write_midifile(file_out, pat)
+    # finalizing
+    finalizing(notes_final,total_1,total_2,repeats)
 
